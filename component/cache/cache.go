@@ -20,7 +20,7 @@ type Cache interface {
 
 // Constants: Timeout connect to redis
 const (
-	Timeout = 1
+	Timeout = 1000
 )
 
 type redis struct {
