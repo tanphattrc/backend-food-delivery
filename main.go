@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"food_delivery/common"
 	"food_delivery/component/appctx"
+	cacheEngine "food_delivery/component/cache"
 	"food_delivery/component/uploadprovider"
+	"food_delivery/config"
 	"food_delivery/middleware"
 	"food_delivery/modules/upload/uploadtransport/ginupload"
 	"food_delivery/modules/user/usertransport/ginuser"
@@ -22,7 +24,8 @@ import (
 
 func main() {
 	//refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
-	dsn := os.Getenv("DBConnectionStr")
+	cfg := config.GetConfig()
+	log.Println(cfg.Environment)
 
 	s3BucketName := os.Getenv("S3BucketName")
 	s3Region := os.Getenv("S3Region")
@@ -33,7 +36,13 @@ func main() {
 
 	s3Provider := uploadprovider.NewS3Provider(s3BucketName, s3Region, s3APIKey, s3SecretKey, s3Domain)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(cfg.DatabaseURI), &gorm.Config{})
+
+	cache := cacheEngine.New(cacheEngine.Config{
+		Address:  cfg.RedisURI,
+		Password: cfg.RedisPassword,
+		Database: cfg.RedisDB,
+	})
 
 	fmt.Println(db, err)
 	db = db.Debug()
@@ -42,13 +51,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	if err := runService(db, s3Provider, secretKey); err != nil {
+	if err := runService(db, s3Provider, secretKey, cache); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey string) error {
-	appCtx := appctx.NewAppContext(db, provider, secretKey, pblocal.NewPubsub())
+func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey string, cache cacheEngine.Cache) error {
+	appCtx := appctx.NewAppContext(db, provider, secretKey, pblocal.NewPubsub(), cache)
 
 	r := gin.Default()
 
@@ -112,23 +121,3 @@ func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey s
 
 	return r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
-
-//type Permission uint64
-//
-//const (
-//	Read Permission = 1 << iota
-//	Write
-//	Delete
-//	Invite
-//)
-
-// User 1: Create group FB A (Owner A)
-// User 1 invite User 2 into group A (User 2 as a member of A)
-
-// user_id | group_id | permission
-// 1	   | 1        | 6
-
-//or
-
-// user_id | group_id | permission
-// 1	   | 1        | read,write,delete,invite

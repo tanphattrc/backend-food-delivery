@@ -3,7 +3,10 @@ package restaurantbiz
 import (
 	"context"
 	"food_delivery/common"
+	"food_delivery/component/cache"
+	"food_delivery/config"
 	"food_delivery/modules/restaurant/restaurantmodel"
+	"github.com/gin-gonic/gin"
 )
 
 type FindSingleRestaurantStore interface {
@@ -19,10 +22,15 @@ func NewGetRestaurantBiz(store FindSingleRestaurantStore) *getRestaurantBiz {
 }
 
 func (biz *getRestaurantBiz) GetRestaurant(
-	ctx context.Context,
+	c *gin.Context,
+	cache cache.Cache,
 	id int) (*restaurantmodel.Restaurant, error) {
-
-	result, err := biz.store.FindRestaurantById(ctx, map[string]interface{}{"id": id})
+	var result *restaurantmodel.Restaurant
+	err := cache.Get(c.Request.URL.Path, &result)
+	if err == nil {
+		return result, err
+	}
+	result, err = biz.store.FindRestaurantById(c.Request.Context(), map[string]interface{}{"id": id})
 
 	if err != nil {
 		if err != common.RecordNotFound {
@@ -40,10 +48,6 @@ func (biz *getRestaurantBiz) GetRestaurant(
 		//return nil, common.ErrCannotGetEntity(restaurantmodel.EntityName, err)
 		return nil, common.ErrEntityDeleted(restaurantmodel.EntityName, err)
 	}
-	//in b
-	//a
-	// enterring: s
-	// leaving: s
-	//
+	_ = cache.SetWithExpiration(c.Request.URL.Path, result, config.ProductCachingTime)
 	return result, err
 }

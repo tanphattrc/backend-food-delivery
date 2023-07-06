@@ -1,0 +1,9 @@
+environment: production
+port: 8888
+auth_secret: ######
+
+database_uri: root:1234@tcp(127.0.0.1:3306)/food_delivery?charset=utf8mb4&parseTime=True&loc=Local
+
+redis_uri: localhost:6379
+redis_password:
+redis_db: 0

@@ -32,7 +32,7 @@ func GetRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 		store := restaurantstorage.NewSQLStore(appCtx.GetMainDBConnection())
 		biz := restaurantbiz.NewGetRestaurantBiz(store)
 
-		result, err := biz.GetRestaurant(c.Request.Context(), int(uid.GetLocalID()))
+		result, err := biz.GetRestaurant(c, appCtx.GetCache(), int(uid.GetLocalID()))
 
 		if err != nil {
 			// Any err thrown from Biz belongs to Application error
