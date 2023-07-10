@@ -1,5 +1,5 @@
 environment: production
-port: 8888
+port: 8080
 auth_secret: ######
 
 database_uri: root:1234@tcp(127.0.0.1:3306)/food_delivery?charset=utf8mb4&parseTime=True&loc=Local
@@ -7,3 +7,10 @@ database_uri: root:1234@tcp(127.0.0.1:3306)/food_delivery?charset=utf8mb4&parseT
 redis_uri: localhost:6379
 redis_password:
 redis_db: 0
+
+s3_bucket_name:
+s3_region:
+s3_api_key:
+s3_secret_key:
+s3_domain:
+system_secret:

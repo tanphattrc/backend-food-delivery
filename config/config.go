@@ -24,6 +24,12 @@ type Schema struct {
 	RedisURI      string `env:"redis_uri"`
 	RedisPassword string `env:"redis_password"`
 	RedisDB       int    `env:"redis_db"`
+	S3BucketName  string `env:"s3_bucket_name"`
+	S3Region      string `env:"s3_region"`
+	S3APIKey      string `env:"s3_api_key"`
+	S3SecretKey   string `env:"s3_secret_key"`
+	S3Domain      string `env:"s3_domain"`
+	SystemSecret  string `env:"system_secret"`
 }
 
 var (
